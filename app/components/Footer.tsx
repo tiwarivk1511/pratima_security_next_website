@@ -1,41 +1,36 @@
 "use client";
-import React, { useState } from 'react'; // Added useState
+import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // Added Next.js Link
 import { Box, Typography, Stack, IconButton, Divider, TextField, Button, CircularProgress } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid'; // Using Grid2 as per latest MUI best practices
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import SendIcon from '@mui/icons-material/Send';
-import SecurityIcon from '@mui/icons-material/Security';
 
 // Firebase Imports
-import { ref, push, set, serverTimestamp } from "firebase/database";
-import { rtdb } from "../../firebaseConfig"; // Adjust the path as needed
+import { ref, set, serverTimestamp } from "firebase/database";
+import { rtdb } from "../../firebaseConfig"; 
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
-
-    // --- NEW: State for Newsletter ---
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // --- Newsletter Logic ---
     const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) return;
 
         setLoading(true);
         try {
-            // Email mein se '.' ko '_' se replace karein kyunki Firebase path mein '.' allowed nahi hota
             const safeEmail = email.replace(/\./g, '_');
-
-            // 'push()' ki jagah hum 'ref' mein safeEmail use kar rahe hain
-            // Isse har email ki ek hi unique entry rahegii
             const subRef = ref(rtdb, `subscriptions/${safeEmail}`);
 
             await set(subRef, {
-                userEmail: email, // Original email yahan save hogi
+                userEmail: email,
                 userName: "Newsletter Subscriber",
                 subscribedAt: serverTimestamp(),
                 source: 'footer_newsletter',
@@ -46,16 +41,43 @@ const Footer = () => {
             setEmail('');
         } catch (error: any) {
             console.error("Subscription Error:", error);
-            alert("Failed to subscribe. Please try again.");
+            alert("Failed to subscribe.");
         } finally {
             setLoading(false);
         }
     };
+
+    // --- Updated Clickable Links with Paths ---
     const footerLinks = {
-        Company: ["About Us", "Our Team", "Careers", "Contact"],
-        Services: ["Industrial Security", "Residential Security", "Event Security", "Bodyguards"],
-        Support: ["Privacy Policy", "Terms of Service", "FAQ", "Site Map"],
+        Company: [
+            { name: "Home", path: "/" },
+            { name: "About Us", path: "/about" },
+            { name: "Services", path: "/services" },
+            { name: "Careers", path: "/career" },
+            { name: "Contact", path: "/contact" }
+        ],
+        Services: [
+            { name: "Industrial Security", path: "/services/security" },
+            { name: "Residential Security", path: "/services/security" },
+            { name: "Event Security", path: "/services/security" },
+            { name: "Bodyguards", path: "/services/security" },
+            { name: "Facility Management", path: "/services/facility" },
+            { name: "Payroll Staffing", path: "/services/payroll" },
+        ],
+        Support: [
+            { name: "Privacy Policy", path: "/privacy-policy" },
+            { name: "Terms of Service", path: "/terms" },
+            { name: "FAQ", path: "/faq" },
+            { name: "Site Map", path: "/sitemap.xml" }
+        ],
     };
+
+    const socialLinks = [
+        { Icon: FacebookIcon, url: "https://facebook.com/pratimasecurity" },
+        { Icon: TwitterIcon, url: "https://twitter.com/pratimasecurity" },
+        { Icon: LinkedInIcon, url: "https://linkedin.com/company/pratimasecurity" },
+        { Icon: InstagramIcon, url: "https://instagram.com/pratimasecurity" }
+    ];
 
     return (
         <Box sx={{ bgcolor: '#020617', color: '#f8fafc', pt: 10, pb: 4, px: { xs: 3, md: 10 }, borderTop: '1px solid #1e293b' }}>
@@ -81,9 +103,13 @@ const Footer = () => {
                             Providing world-class security solutions with integrity and excellence. Your safety is our mission across all 8 major branches in India.
                         </Typography>
                         <Stack direction="row" spacing={1}>
-                            {[FacebookIcon, TwitterIcon, LinkedInIcon, InstagramIcon].map((Icon, index) => (
+                            {socialLinks.map(({ Icon, url }, index) => (
                                 <IconButton
                                     key={index}
+                                    component="a"
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     sx={{
                                         bgcolor: '#0f172a', color: '#94a3b8',
                                         '&:hover': { bgcolor: '#2563eb', color: '#fff', transform: 'translateY(-3px)' },
@@ -106,16 +132,16 @@ const Footer = () => {
                         <Stack spacing={1.5}>
                             {links.map((link) => (
                                 <Typography
-                                    key={link}
-                                    component="a"
-                                    href="#"
+                                    key={link.name}
+                                    component={Link}
+                                    href={link.path}
                                     sx={{
                                         color: '#64748b', textDecoration: 'none', fontSize: '0.9rem',
                                         '&:hover': { color: '#2563eb', pl: 0.5 },
                                         transition: 'all 0.2s'
                                     }}
                                 >
-                                    {link}
+                                    {link.name}
                                 </Typography>
                             ))}
                         </Stack>
@@ -176,7 +202,7 @@ const Footer = () => {
                     © {currentYear} Pratima Security Services. All rights reserved.
                 </Typography>
                 <Typography sx={{ color: '#64748b', fontSize: '0.85rem' }}>
-                    Designed with Excellence.
+                    Designed by <Link href="https://vikashtiwaridev.web.app/" style={{ color: '#2563eb', textDecoration: 'none' }}>Vikash Tiwari</Link>
                 </Typography>
             </Stack>
         </Box>
@@ -185,11 +211,10 @@ const Footer = () => {
 
 export default Footer;
 
-
 // "use client";
-// import React from 'react';
+// import React, { useState } from 'react'; // Added useState
 // import Image from 'next/image';
-// import { Box, Typography, Stack, IconButton, Divider, TextField, Button } from '@mui/material';
+// import { Box, Typography, Stack, IconButton, Divider, TextField, Button, CircularProgress } from '@mui/material';
 // import Grid from '@mui/material/Grid';
 // import FacebookIcon from '@mui/icons-material/Facebook';
 // import TwitterIcon from '@mui/icons-material/Twitter';
@@ -198,9 +223,47 @@ export default Footer;
 // import SendIcon from '@mui/icons-material/Send';
 // import SecurityIcon from '@mui/icons-material/Security';
 
+// // Firebase Imports
+// import { ref, push, set, serverTimestamp } from "firebase/database";
+// import { rtdb } from "../../firebaseConfig"; // Adjust the path as needed
+
 // const Footer = () => {
 //     const currentYear = new Date().getFullYear();
 
+//     // --- NEW: State for Newsletter ---
+//     const [email, setEmail] = useState('');
+//     const [loading, setLoading] = useState(false);
+
+//     const handleSubscribe = async (e: React.FormEvent) => {
+//         e.preventDefault();
+//         if (!email) return;
+
+//         setLoading(true);
+//         try {
+//             // Email mein se '.' ko '_' se replace karein kyunki Firebase path mein '.' allowed nahi hota
+//             const safeEmail = email.replace(/\./g, '_');
+
+//             // 'push()' ki jagah hum 'ref' mein safeEmail use kar rahe hain
+//             // Isse har email ki ek hi unique entry rahegii
+//             const subRef = ref(rtdb, `subscriptions/${safeEmail}`);
+
+//             await set(subRef, {
+//                 userEmail: email, // Original email yahan save hogi
+//                 userName: "Newsletter Subscriber",
+//                 subscribedAt: serverTimestamp(),
+//                 source: 'footer_newsletter',
+//                 status: 'active'
+//             });
+
+//             alert("Subscribed successfully!");
+//             setEmail('');
+//         } catch (error: any) {
+//             console.error("Subscription Error:", error);
+//             alert("Failed to subscribe. Please try again.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
 //     const footerLinks = {
 //         Company: ["About Us", "Our Team", "Careers", "Contact"],
 //         Services: ["Industrial Security", "Residential Security", "Event Security", "Bodyguards"],
@@ -280,12 +343,17 @@ export default Footer;
 //                     <Typography sx={{ color: '#94a3b8', fontSize: '0.85rem', mb: 2 }}>
 //                         Subscribe for security tips and updates.
 //                     </Typography>
-//                     <Box sx={{ position: 'relative' }}>
+//                     <Box component="form" onSubmit={handleSubscribe} sx={{ position: 'relative' }}>
 //                         <TextField
 //                             fullWidth
 //                             placeholder="Email Address"
 //                             variant="outlined"
 //                             size="small"
+//                             type="email"
+//                             required
+//                             value={email}
+//                             onChange={(e) => setEmail(e.target.value)}
+//                             disabled={loading}
 //                             sx={{
 //                                 '& .MuiOutlinedInput-root': {
 //                                     bgcolor: '#0f172a', borderRadius: '12px', color: '#fff',
@@ -294,12 +362,15 @@ export default Footer;
 //                             }}
 //                         />
 //                         <Button
+//                             type="submit"
+//                             disabled={loading}
 //                             sx={{
 //                                 minWidth: 0, position: 'absolute', right: 5, top: 4, bgcolor: '#2563eb', color: '#fff',
-//                                 borderRadius: '8px', p: 0.8, '&:hover': { bgcolor: '#1d4ed8' }
+//                                 borderRadius: '8px', p: 0.8, '&:hover': { bgcolor: '#1d4ed8' },
+//                                 '&.Mui-disabled': { bgcolor: '#1e293b', color: '#64748b' }
 //                             }}
 //                         >
-//                             <SendIcon sx={{ fontSize: 18 }} />
+//                             {loading ? <CircularProgress size={18} color="inherit" /> : <SendIcon sx={{ fontSize: 18 }} />}
 //                         </Button>
 //                     </Box>
 //                 </Grid>
