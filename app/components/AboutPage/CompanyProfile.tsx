@@ -8,6 +8,9 @@ import {
   TrendingUp 
 } from 'lucide-react';
 
+import { motion } from 'framer-motion';
+import { Box, Typography, Container, Stack, Button } from '@mui/material';
+
 const CompanyProfile = () => {
   const services = [
     { title: "Manned Guarding", desc: "Highly trained personnel for 24/7 onsite protection.", icon: ShieldCheck },
@@ -134,12 +137,43 @@ const CompanyProfile = () => {
               comprehensive protection across India.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
-              <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 px-14 rounded-2xl transition-all shadow-2xl shadow-blue-600/30 active:scale-95 text-xl">
+              <Button
+                  variant="contained" 
+                  sx={{
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    py: 2.5,
+                    px: 6,
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    fontSize: '1.125rem',
+                    '&:hover': { backgroundColor: '#1e40af' },
+                    '&:active': { transform: 'scale(0.95)' },
+                    transition: 'all 0.3s ease'
+                  }}
+                  href="/contact"
+              >
                 Contact Us Now
-              </button>
-              <button className="text-white font-semibold py-5 px-10 rounded-2xl border border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all text-xl">
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  color: '#fff',
+                  borderColor: '#fff/20',
+                  py: 2.5,
+                  px: 6,
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '1.125rem',
+                  '&:hover': { 
+                    backgroundColor: '#fff/10' },
+                  transition: 'all 0.3s ease'
+                }}
+                href="/clients"
+              >
                 Our Clients
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -1,6 +1,27 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false
+    "contact_submissions": {
+      ".read": "auth != null",
+      ".write": "true",
+      "$submission_id": {
+        ".validate": "newData.hasChildren(['name', 'email', 'message', 'createdAt', 'status'])"
+      }
+    },
+    
+    
+    "subscriptions": {
+      ".read": "auth != null", 
+      ".write": "true",
+      "$sub_id": {
+        ".validate": "newData.hasChildren(['userName', 'userEmail', 'subscribedAt'])"
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
   }
 }

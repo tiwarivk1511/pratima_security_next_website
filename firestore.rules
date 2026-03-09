@@ -2,8 +2,25 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // 1. Mission Requests (Contact Form) ke liye rules
+    match /mission_requests/{requestId} {
+      // Koi bhi naya request bhej sakta hai (Public Create)
+      allow create: if true;
+      
+      // Sirf authenticated users (Admins) hi requests dekh, update ya delete kar sakte hain
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // 2. Users Profile ke liye rules
+    match /users/{userId} {
+      // Sirf wahi user apna data read/write kar sakta hai jiski UID match kare
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 3. Baki sabhi collections ke liye default security (Optional)
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }

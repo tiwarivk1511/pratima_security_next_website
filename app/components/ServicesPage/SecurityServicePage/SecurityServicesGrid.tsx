@@ -8,8 +8,11 @@ import {
 import Image from 'next/image';
 import { Dialog, DialogContent, TextField, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
-// --- DATA STRUCTURE ---
+// Firebase Imports
+import { ref, push, set, serverTimestamp } from "firebase/database";
+import { rtdb } from "../../../../firebaseConfig"; // Apna sahi path check kar lein
 
+// --- DATA STRUCTURE ---
 const SERVICES_DATA = [
   {
     id: 1,
@@ -90,15 +93,77 @@ const SERVICES_DATA = [
   }
 ];
 
+
 const SecurityServicesLight = () => {
   const [open, setOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // --- NEW: Form States ---
+  const [formData, setFormData] = useState({
+    fullName: '',
+    company: '',
+    phone: '',
+    email: '',
+    address: '',
+    service: '',
+    surveyDate: ''
+  });
 
   const handleOpen = (serviceTitle = '') => {
-    setSelectedService(serviceTitle);
+    setFormData(prev => ({ ...prev, service: serviceTitle }));
     setOpen(true);
   };
-  const handleClose = () => setOpen(false);
+
+  const handleClose = () => {
+    if (!loading) setOpen(false);
+  };
+
+  // --- NEW: Database Submission Logic ---
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const timestamp = serverTimestamp();
+      
+      // Email key prepare karein (dots ko replace karke)
+      const safeEmail = formData.email.replace(/\./g, '_');
+
+      // --- 1. Mission Request (Hamesha Nayi Entry - kyunki ye ek service request hai) ---
+      // Isme push() hi sahi hai taaki purani bookings delete na hon.
+      const requestRef = push(ref(rtdb, 'mission_requests'));
+      await set(requestRef, {
+        ...formData,
+        createdAt: timestamp,
+        status: 'pending'
+      });
+
+      // --- 2. Subscription (Unique/Swap Logic) ---
+      // Yahan push() hata kar email-based path use kiya hai
+      const subRef = ref(rtdb, `subscriptions/${safeEmail}`);
+      await set(subRef, {
+        userName: formData.fullName,
+        userEmail: formData.email,
+        subscribedAt: timestamp,
+        status: 'active',
+        source: 'site_survey_form'
+      });
+
+      alert('Booking Confirmed Successfully!');
+      setFormData({ fullName: '', company: '', phone: '', email: '', address: '', service: '', surveyDate: '' });
+      setOpen(false);
+
+    } catch (err: any) {
+      console.error("Database Error:", err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (field: string) => (e: any) => {
+    setFormData({ ...formData, [field]: e.target.value });
+  };
 
   return (
     <section className="relative py-24 bg-[#f8fafc] overflow-hidden" id='security-services'>
@@ -196,7 +261,6 @@ const SecurityServicesLight = () => {
         }}
       >
         <DialogContent sx={{ p: { xs: 3, md: 6 } }}>
-          {/* HEADER SECTION */}
           <div className="flex justify-between items-start mb-10">
             <div>
               <h2 className="text-3xl font-[1000] text-slate-900 uppercase tracking-tighter leading-none">Book Site Survey</h2>
@@ -210,40 +274,34 @@ const SecurityServicesLight = () => {
             </IconButton>
           </div>
 
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleClose(); alert('Assessment Requested Successfully!'); }}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             
-            {/* 1. IDENTITY (Name & Company) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <TextField fullWidth label="Your Full Name *" variant="filled" required sx={inputStyle} />
-              <TextField fullWidth label="Company / Establishment" variant="filled" sx={inputStyle} />
+              <TextField fullWidth label="Your Full Name *" variant="filled" required sx={inputStyle} 
+                value={formData.fullName} onChange={handleChange('fullName')} />
+              <TextField fullWidth label="Company / Establishment" variant="filled" sx={inputStyle} 
+                value={formData.company} onChange={handleChange('company')} />
             </div>
 
-            {/* 2. COMMUNICATION (Phone & Email) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <TextField fullWidth label="Phone Number *" variant="filled" required sx={inputStyle} />
-              <TextField fullWidth label="Email Address *" type="email" variant="filled" required sx={inputStyle} />
+              <TextField fullWidth label="Phone Number *" variant="filled" required sx={inputStyle} 
+                value={formData.phone} onChange={handleChange('phone')} />
+              <TextField fullWidth label="Email Address *" type="email" variant="filled" required sx={inputStyle} 
+                value={formData.email} onChange={handleChange('email')} />
             </div>
 
-            {/* 3. LOCATION (Address) */}
             <div className="py-1">
               <TextField 
-                fullWidth 
-                label="Deployment Site Address *" 
-                variant="filled" 
-                multiline 
-                rows={2} 
-                required 
-                sx={inputStyle} 
-              />
+                fullWidth label="Deployment Site Address *" variant="filled" multiline rows={2} required sx={inputStyle} 
+                value={formData.address} onChange={handleChange('address')} />
             </div>
 
-            {/* 4. DETAILS (Service & Date) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <FormControl fullWidth variant="filled" sx={inputStyle} required>
                 <InputLabel sx={{ fontSize: '0.75rem' }}>Select Service *</InputLabel>
                 <Select
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
+                  value={formData.service}
+                  onChange={handleChange('service')}
                   label="Select Service *"
                 >
                   {SERVICES_DATA.map((s) => (
@@ -255,17 +313,11 @@ const SecurityServicesLight = () => {
               </FormControl>
 
               <TextField 
-                fullWidth 
-                label="Preferred Survey Date *" 
-                type="date" 
-                variant="filled" 
-                InputLabelProps={{ shrink: true }} 
-                required
-                sx={inputStyle} 
-              />
+                fullWidth label="Preferred Survey Date *" type="date" variant="filled" 
+                InputLabelProps={{ shrink: true }} required sx={inputStyle} 
+                value={formData.surveyDate} onChange={handleChange('surveyDate')} />
             </div>
 
-            {/* TRUST BADGE */}
             <div className="bg-blue-50/40 p-5 rounded-[1.5rem] border border-blue-100 flex items-center gap-4 my-2">
               <div className="h-10 w-10 rounded-full bg-white text-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm border border-blue-100">
                 <Check size={20} strokeWidth={3} />
@@ -275,13 +327,13 @@ const SecurityServicesLight = () => {
               </p>
             </div>
 
-            {/* SUBMIT SECTION */}
             <div className="pt-2">
               <button 
                 type="submit"
-                className="w-full bg-[#0f172a] text-white py-5 rounded-[1.25rem] font-black uppercase text-xs tracking-[0.3em] hover:bg-blue-600 transition-all shadow-xl flex items-center justify-center gap-3 group active:scale-[0.98]"
+                disabled={loading}
+                className="w-full bg-[#0f172a] text-white py-5 rounded-[1.25rem] font-black uppercase text-xs tracking-[0.3em] hover:bg-blue-600 transition-all shadow-xl flex items-center justify-center gap-3 group active:scale-[0.98] disabled:opacity-50"
               >
-                Confirm Booking
+                {loading ? 'Booking...' : 'Confirm Booking'}
                 <Target size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
               
@@ -317,6 +369,4 @@ const inputStyle = {
 };
 
 export default SecurityServicesLight;
-
-
 

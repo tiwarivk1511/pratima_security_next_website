@@ -1,0 +1,13 @@
+# All search engines are allowed to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow crawling of private or administrative pages
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /dashboard/
+
+# Host and Sitemap location
+Host: https://pratimasecurservice.com
+Sitemap: https://pratimasecurservice.com/sitemap.xml

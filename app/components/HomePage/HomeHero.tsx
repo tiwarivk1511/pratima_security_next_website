@@ -25,10 +25,10 @@ const HeroSection = () => {
   return (
     <section className="relative w-full h-screen flex items-center justify-center overflow-hidden">
       <Image
-        src="https://img1.wsimg.com/isteam/stock/826/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:2046,m" 
+        src="https://rahmandev-20067062.hs-sites.com/hubfs/raw_assets/public/ZenRaiford/images/Banner/2.jpg" 
         alt="Pratima Security Guards"
         fill // Next.js 13+ mein layout="fill" ki jagah sirf fill use hota hai
-        className="object-cover z-0"
+        className="object-fill z-0"
         quality={90}
         priority 
       />

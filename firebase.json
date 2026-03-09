@@ -70,18 +70,15 @@
     }
   ],
   "hosting": {
-    "public": "public",
+    "site": "pratimasecurity",
+    "public": "out",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    "cleanUrls": true,
+    "trailingSlash": true
   },
   "remoteconfig": {
     "template": "remoteconfig.template.json"
