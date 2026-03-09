@@ -1,5 +1,6 @@
 {
   "rules": {
+    
     "contact_submissions": {
       ".read": "auth != null",
       ".write": "true",
@@ -9,14 +10,33 @@
     },
     
     
+    "mission_requests": {
+      ".read": "auth != null",
+      ".write": "true",
+      "$request_id": {
+        ".validate": "newData.hasChildren(['fullName', 'email', 'phone', 'address', 'service', 'surveyDate', 'createdAt', 'status'])"
+      }
+    },
+
+    
+    "facility_enquiries": {
+      ".read": "auth != null",
+      ".write": "true",
+      "$enquiry_id": {
+        ".validate": "newData.hasChildren(['fullName', 'email', 'phone', 'address', 'service', 'requiredDate', 'timestamp'])"
+      }
+    },
+
+   
     "subscriptions": {
       ".read": "auth != null", 
       ".write": "true",
       "$sub_id": {
-        ".validate": "newData.hasChildren(['userName', 'userEmail', 'subscribedAt'])"
+        ".validate": "newData.hasChildren(['userName', 'userEmail', 'subscribedAt', 'source'])"
       }
     },
 
+    
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
